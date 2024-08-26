@@ -1,0 +1,36 @@
+version: '3'
+services:
+    suggest-text-core:
+        build: ./src/core
+        # image: suggest-text-core
+        network_mode: host
+        environment:
+            WHISPER_API_URL: http://localhost:8081
+        # depends_on:
+        #     whisper-stt:
+        #         condition: service_healthy
+        env_file:
+            - .env
+        restart: always
+        volumes:
+            - ./src/user_data/tmp:/user_data/tmp
+    whisper-stt:
+        build: ./src/whisper_stt
+        # image: whisper-stt
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: nvidia
+                          count: all
+                          capabilities:
+                              - gpu
+        ports:
+            - 8081:8080
+        volumes:
+            - ./src/user_data/tmp:/user_data/tmp
+        env_file:
+            - .env
+        restart: always
+volumes:
+  user_data:
